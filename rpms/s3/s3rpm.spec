@@ -268,6 +268,10 @@ rm -rf %{buildroot}
 /opt/seagate/cortx/s3/install/ldap/test_data.ldif
 /opt/seagate/cortx/s3/install/ldap/run_check_ldap_replication_in_loop.sh
 /opt/seagate/cortx/s3/install/ldap/create_replication_account.ldif
+/opt/seagate/cortx/s3/install/ldap/replication/setupReplicationScript.sh
+/opt/seagate/cortx/s3/install/ldap/replication/dataTemplate.ldif
+/opt/seagate/cortx/s3/install/ldap/replication/configTemplate.ldif
+/opt/seagate/cortx/s3/install/ldap/replication/serverIdTemplate.ldif
 /opt/seagate/cortx/s3/install/ldap/replication/syncprov_mod.ldif
 /opt/seagate/cortx/s3/install/ldap/replication/olcserverid.ldif
 /opt/seagate/cortx/s3/install/ldap/replication/syncprov.ldif

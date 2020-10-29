@@ -43,7 +43,7 @@ then
     exit 1
 fi
 
-INSTALLDIR="/opt/seagate/cortx/s3/install/ldap"
+INSTALLDIR="/opt/seagate/cortx/s3/install/ldap/replication"
 
 #Below function will check if all provided hosts are valid or not
 checkHostValidity()
