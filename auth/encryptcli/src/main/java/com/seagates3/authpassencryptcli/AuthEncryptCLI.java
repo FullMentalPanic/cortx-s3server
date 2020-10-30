@@ -124,7 +124,7 @@ public class AuthEncryptCLI {
     }
 
     /**
-     * This method reads public key from the JKS file.
+     * This method reads keystore password from s3cipher utility.
      */
    public
     static String getKeystorePasswd() throws Exception {
