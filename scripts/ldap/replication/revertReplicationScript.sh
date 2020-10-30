@@ -76,11 +76,11 @@ getServerIdWithSalt()
 
 #olcServerId script
 checkHostValidity
-if hash salt 2>/dev/null; then
-    getServerIdWithSalt
-else
-    getServerIdFromHostFile
-fi
+#if hash salt 2>/dev/null; then
+#    getServerIdWithSalt
+#else
+getServerIdFromHostFile
+#fi
 sed -e "s/\${serverid}/$id/" revertServerIdTemplate.ldif > scriptRevertServerId.ldif
 ldapmodify -Y EXTERNAL  -H ldapi:/// -f scriptRevertServerId.ldif
 rm scriptRevertServerId.ldif

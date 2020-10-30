@@ -81,11 +81,11 @@ getServerIdWithSalt()
 
 #olcServerId script
 checkHostValidity
-if hash salt 2>/dev/null; then
-    getServerIdWithSalt
-else
-    getServerIdFromHostFile
-fi
+#if hash salt 2>/dev/null; then
+#    getServerIdWithSalt
+#else
+getServerIdFromHostFile
+#fi
 sed -e "s/\${serverid}/$id/" $INSTALLDIR/serverIdTemplate.ldif > $INSTALLDIR/scriptServerId.ldif
 ldapmodify -Y EXTERNAL  -H ldapi:/// -f $INSTALLDIR/scriptServerId.ldif
 rm $INSTALLDIR/scriptServerId.ldif
@@ -94,46 +94,30 @@ ldapadd -Y EXTERNAL -H ldapi:/// -f $INSTALLDIR/syncprov_mod.ldif
 
 ldapadd -Y EXTERNAL -H ldapi:/// -f $INSTALLDIR/syncprov.ldif
 
-#update replicaiton config
-
+#update replication config
+echo "dn: olcDatabase={0}config,cn=config" > scriptConfig.ldif
+echo "changetype: modify" >> scriptConfig.ldif
+echo "add: olcSyncRepl" >> scriptConfig.ldif
 rid=1
 while read host; do
-sed -e "s/\${rid}/$rid/" -e "s/\${provider}/$host/" -e "s/\${credentials}/$password/" $INSTALLDIR/configTemplate.ldif > $INSTALLDIR/scriptConfig.ldif
-if [ ${rid} -eq 2 ] && [ ${id} -eq 1 ]
-then
-    echo "-" >> $INSTALLDIR/scriptConfig.ldif
-    echo "add: olcMirrorMode" >> $INSTALLDIR/scriptConfig.ldif
-     echo "olcMirrorMode: TRUE" >> $INSTALLDIR/scriptConfig.ldif
-fi
-if [ ${rid} -eq 1 ] && [ ${id} -ne 1 ]
-then
-    echo "-" >> $INSTALLDIR/scriptConfig.ldif
-    echo "add: olcMirrorMode" >> $INSTALLDIR/scriptConfig.ldif
-    echo "olcMirrorMode: TRUE" >> $INSTALLDIR/scriptConfig.ldif
-fi
-ldapmodify -Y EXTERNAL  -H ldapi:/// -f $INSTALLDIR/scriptConfig.ldif
-rm $INSTALLDIR/scriptConfig.ldif
+sed -e "s/\${rid}/$rid/" -e "s/\${provider}/$host/" -e "s/\${credentials}/$password/" $INSTALLDIR/configTemplate.ldif >> scriptConfig.ldif
 rid=`expr ${rid} + 1`
 done <$host_list
-
-iteration=1
+    echo "-" >> scriptConfig.ldif
+    echo "add: olcMirrorMode" >> scriptConfig.ldif
+     echo "olcMirrorMode: TRUE" >> scriptConfig.ldif
+ldapmodify -Y EXTERNAL  -H ldapi:/// -f scriptConfig.ldif
+rm scriptConfig.ldif
 # Update mdb file
+echo "dn: olcDatabase={2}mdb,cn=config" > scriptData.ldif
+echo "changetype: modify" >> scriptData.ldif
+echo "add: olcSyncRepl" >> scriptData.ldif
 while read host; do
-sed -e "s/\${rid}/$rid/" -e "s/\${provider}/$host/" -e "s/\${credentials}/$password/" $INSTALLDIR/dataTemplate.ldif > $INSTALLDIR/scriptData.ldif
-if [ ${iteration} -eq 2 ] && [ ${id} -eq 1 ]
-then
-    echo "-" >> $INSTALLDIR/scriptData.ldif
-    echo "add: olcMirrorMode" >> $INSTALLDIR/scriptData.ldif
-    echo "olcMirrorMode: TRUE" >> $INSTALLDIR/scriptData.ldif
-fi
-if [ ${iteration} -eq 1 ] && [ ${id} -ne 1 ]
-then
-    echo "-" >> $INSTALLDIR/scriptData.ldif
-    echo "add: olcMirrorMode" >> $INSTALLDIR/scriptData.ldif
-    echo "olcMirrorMode: TRUE" >> $INSTALLDIR/scriptData.ldif
-fi
-ldapmodify -Y EXTERNAL  -H ldapi:/// -f $INSTALLDIR/scriptData.ldif
-rm $INSTALLDIR/scriptData.ldif
+sed -e "s/\${rid}/$rid/" -e "s/\${provider}/$host/" -e "s/\${credentials}/$password/" $INSTALLDIR/dataTemplate.ldif >> scriptData.ldif
 rid=`expr ${rid} + 1`
-iteration=`expr ${iteration} + 1`
 done <$host_list
+    echo "-" >> scriptData.ldif
+    echo "add: olcMirrorMode" >> scriptData.ldif
+    echo "olcMirrorMode: TRUE" >> scriptData.ldif
+ldapmodify -Y EXTERNAL  -H ldapi:/// -f scriptData.ldif
+rm scriptData.ldif
