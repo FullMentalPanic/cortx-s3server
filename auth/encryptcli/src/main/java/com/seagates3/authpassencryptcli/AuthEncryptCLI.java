@@ -56,7 +56,8 @@ public class AuthEncryptCLI {
 
   public
    static final String AUTH_INSTALL_DIR = "/opt/seagate/cortx/auth";
-   public static final String AUTH_RESOURCE_DIR = "/opt/seagate/cortx/auth/resources";
+  public
+   static final String AUTH_RESOURCE_DIR = "/opt/seagate/cortx/auth/resources";
     private static Logger logger;
     private
      static boolean isEncryptOptionPassed = false;
@@ -71,8 +72,7 @@ public class AuthEncryptCLI {
                                                           + " [options]");
         System.out.println(
             "-s  <password>       Specify password to be encrypted");
-        System.out.println(
-            "-d   decrypt ldap login password");
+        System.out.println("-d   decrypt ldap login password");
         System.out.println("-help");
     }
 
@@ -294,11 +294,14 @@ public class AuthEncryptCLI {
             System.out.println(processEncryptRequest(passwd));
           } else if (isDecryptOptionPassed) {
             Properties authServerConfig = new Properties();
-            Path authProperties = Paths.get(AUTH_RESOURCE_DIR, "authserver.properties");
-            InputStream inStream = new FileInputStream(authProperties.toString());
+            Path authProperties =
+                Paths.get(AUTH_RESOURCE_DIR, "authserver.properties");
+            InputStream inStream =
+                new FileInputStream(authProperties.toString());
             authServerConfig.load(inStream);
-            
-            String encryptedPasswd = authServerConfig.getProperty("ldapLoginPW");  
+
+            String encryptedPasswd =
+                authServerConfig.getProperty("ldapLoginPW");
 
             // Output to console
             System.out.println(processDecryptRequest(encryptedPasswd));
