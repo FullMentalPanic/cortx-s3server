@@ -125,7 +125,7 @@ do
         setup_jenkins_yum_repo=true
         ;;
     --s3backgrounddelete )
-        setup_s3backgrounddelte=true
+        setup_s3backgrounddelete=true
         ;;
     --s3recoverytool )
         setup_s3recoverytool=true
@@ -306,15 +306,12 @@ then
 fi
 
 # Install and Configure Openldap over Non-SSL.
-ldappasswd=$(java -jar $encrypt_cli -d)
-
 if [[ $config_ldap == true ]]
 then
     /opt/seagate/cortx/s3/install/ldap/setup_ldap.sh --defaultpasswd --forceclean --skipssl
 
-    # update ldappasswd
-    ldappasswd=$(java -jar $encrypt_cli -d)
-    # /opt/seagate/cortx/s3/install/ldap/replication/setupReplicationScript.sh -h /root/host_file -p $ldappasswd
+    ldap_passwd=$(java -jar $encrypt_cli -d)
+    # /opt/seagate/cortx/s3/install/ldap/replication/setupReplicationScript.sh -h /root/host_file -p $ldap_passwd
 
     if [[ -f /opt/seagate/cortx/s3/install/ldap/rsyslog.d/slapdlog.conf ]]
     then
@@ -328,9 +325,9 @@ then
 elif [[ $purge_config_ldap == true ]]
 then
     $S3_DIR/scripts/ldap/setup_ldap.sh --defaultpasswd --forceclean --skipssl
-    # update ldappasswd
-    ldappasswd=$(java -jar $encrypt_cli -d)
 fi
+
+ldappasswd=$(java -jar $encrypt_cli -d)
 
 # Setup Openldap replication for EES setup.
 if [[ $ldap_replication == true ]]
@@ -509,7 +506,7 @@ delete_background_delete_account()
 }
 
 # Setup s3 background delete and its dependencies
-if [[ $setup_s3backgrounddelte == true ]]
+if [[ $setup_s3backgrounddelete == true ]]
 then
     echo "Setting up rabbitmq server for S3backgroundelete"
     add_s3backgrounddelete_rabbitmq_user
