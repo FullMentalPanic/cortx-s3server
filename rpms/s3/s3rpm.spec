@@ -120,6 +120,15 @@ Requires: hiredis
 S3 server provides S3 REST API interface support for Motr object storage.
 
 %prep
+[ -f /opt/seagate/cortx/s3/conf/s3config.yaml.sample ] &&
+    cp -f /opt/seagate/cortx/s3/conf/s3config.yaml.sample /tmp/s3config.yaml.sample.old
+[ -f /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml.sample ] &&
+    cp -f /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml.sample /tmp/config.yaml.sample.old
+[ -f /opt/seagate/cortx/auth/resources/keystore.properties.sample ] &&
+    cp -f /opt/seagate/cortx/auth/resources/keystore.properties.sample /tmp/keystore.properties.sample.old
+[ -f /opt/seagate/cortx/auth/resources/authserver.properties.sample ] &&
+    cp -f /opt/seagate/cortx/auth/resources/authserver.properties.sample /tmp/authserver.properties.sample.old
+
 %setup -n %{name}-%{version}-%{_s3_git_ver}
 
 %build
@@ -305,6 +314,11 @@ rm -rf %{buildroot}
 /opt/seagate/cortx/s3/conf/setup.yaml
 /opt/seagate/cortx/s3/s3datarecovery/s3_data_recovery.sh
 /opt/seagate/cortx/datarecovery/orchastrator.sh
+/opt/seagate/cortx/auth/resources/authserver_safe_attributes.yaml
+/opt/seagate/cortx/auth/resources/keystore_safe_attributes.yaml
+/opt/seagate/cortx/s3/conf/s3config_safe_attributes.yaml
+/opt/seagate/cortx/s3/s3backgrounddelete/s3backgrounddelete_safe_attributes.yaml
+
 %attr(755, root, root) /opt/seagate/cortx/s3/bin/s3_setup
 %attr(755, root, root) /opt/seagate/cortx/s3/s3backgrounddelete/s3backgroundconsumer
 %attr(755, root, root) /opt/seagate/cortx/s3/s3backgrounddelete/s3backgroundproducer
@@ -336,14 +350,28 @@ rm -rf %{buildroot}
 %exclude /opt/seagate/cortx/s3/reset/precheck.pyo
 
 %post
-[ -f /opt/seagate/cortx/s3/conf/s3config.yaml ] || 
+[ -f /opt/seagate/cortx/s3/conf/s3config.yaml ] &&
+./merge.sh /opt/seagate/cortx/s3/conf/s3config.yaml /tmp/s3config.yaml.sample.old /opt/seagate/cortx/s3/conf/s3config.yaml.sample /opt/seagate/cortx/s3/conf/s3config_safe_attributes.yaml yaml
+||
     cp /opt/seagate/cortx/s3/conf/s3config.yaml.sample /opt/seagate/cortx/s3/conf/s3config.yaml
-[ -f /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml ] ||
+[ -f /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml ] &&
+./merge.sh /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml /tmp/config.yaml.sample.old /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml.sample /opt/seagate/cortx/s3/s3backgrounddelete/s3backgrounddelete_safe_attributes.yaml yaml
+||
     cp /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml.sample /opt/seagate/cortx/s3/s3backgrounddelete/config.yaml
-[ -f /opt/seagate/cortx/auth/resources/authserver.properties ] ||
+[ -f /opt/seagate/cortx/auth/resources/authserver.properties ] &&
+./merge.sh /opt/seagate/cortx/auth/resources/authserver.properties /tmp/authserver.properties.sample.old /opt/seagate/cortx/auth/resources/authserver.properties.sample /opt/seagate/cortx/auth/resources/authserver_safe_attributes.yaml properties
+||
     cp /opt/seagate/cortx/auth/resources/authserver.properties.sample /opt/seagate/cortx/auth/resources/authserver.properties
-[ -f /opt/seagate/cortx/auth/resources/keystore.properties ] ||
+[ -f /opt/seagate/cortx/auth/resources/keystore.properties ] &&
+./merge.sh /opt/seagate/cortx/auth/resources/keystore.properties /tmp/keystore.properties.sample.old /opt/seagate/cortx/auth/resources/keystore.properties.sample /opt/seagate/cortx/auth/resources/keystore_safe_attributes.yaml properties
+||
     cp /opt/seagate/cortx/auth/resources/keystore.properties.sample /opt/seagate/cortx/auth/resources/keystore.properties
+
+rm -f /tmp/s3config.yaml.sample.old
+rm -f /tmp/config.yaml.sample.old
+rm -f /tmp/authserver.properties.sample.old
+rm -f /tmp/keystore.properties.sample.old
+
 systemctl daemon-reload
 systemctl enable s3authserver
 systemctl restart rsyslog
